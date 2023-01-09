@@ -2,8 +2,32 @@ services:
   wardrobe-trakcer:
     build: ./www/
     container_name: wardrobe-streamlit 
+    links:
+      - mysql
     ports:
-     - 8501:8501
+      - 8501:8501
+
+  mysql:
+    image: mysql:8.0
+    container_name: wardrobe-mysql 
+    command: --default-authentication-plugin=mysql_native_password
+    volumes:
+      - /var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_DATABASE: wardrobedb
+      MYSQL_USER: myuser
+      MYSQL_PASSWORD: password
+
+  phpadmin:
+    image: phpmyadmin:latest
+    container_name: wardrobe-admin 
+    links:
+      - mysql
+    ports:
+      - 8581:80
+    environment:
+      - PMA_ARBITRARY=1
 
 networks:
   webnet: {}

@@ -1,0 +1,3 @@
+connect wardrobedb;
+
+CREATE TABLE articles (id, BIGINT NOT NULL AUTO_INCREMENT, Name varchar(255) NOT NULL, Type varchar(128) NOT NULL, Image LONGBLOB, Cost DECIMAL UNSIGNED, Wearings INTEGER NOT NULL, Retired BOOELAN NOT NULL,  PRIMARY KEY (id))
