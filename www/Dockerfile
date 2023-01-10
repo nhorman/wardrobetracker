@@ -15,6 +15,8 @@ ADD requirements.txt .
 ADD index.py .
 ADD start-streamlit.sh .
 ADD createdb.sql .
+RUN mkdir -p /app/.streamlit/secrets.toml
+ADD secrets.toml ./.streamlit/secrets.toml
 
 RUN pip3 install -r requirements.txt
 ENV PATH "$PATH:/app"
