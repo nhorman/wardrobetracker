@@ -1,4 +1,4 @@
-WDVOL=$(shell podman volume ls | awk '/wardrobe/ {print $2}')
+WDVOL=$(shell podman volume ls | awk '/wardrobe/ {print $$2}')
 
 all:
 	podman-compose build

@@ -1,6 +1,13 @@
 
 import streamlit as st
+import mysql.connector
 
+#Set up db connection
+@st.experimental_singleton
+def init_connection():
+    return mysql.connector.connect(**st.secrets["mysql"])
+
+dbcon = init_connection()
 
 def intro():
     import streamlit as st
@@ -11,13 +18,17 @@ def intro():
 def create_piece():
     st.write("Create a new Article of Clothing")
     with st.form("NewArticleForm"):
-        name = st.text_input("ArticleName")
+        name = st.text_input("Article Name")
         atype = st.selectbox("Type of Article", ('Top', 'Bottom', 'Dress', 'Shoes', 'Accessory', 'Other'))
+        cost = st.number_input("Cost Of Article", format="%f")
         photo = st.file_uploader("ArticleImage", accept_multiple_files=False)
         submit = st.form_submit_button("Submit")
         if submit:
-            print("Add clothing to database here")
-
+            if photo:
+                query = "INSERT INTO articles (Name, Type, Image, Cost, Retired) VALUES (" + name + "," + atype + "," + photo, "," + cost +",false)"
+            else:
+                query = "INSERT INTO articles (Name, Type, Cost, Retired) VALUES (" + name + "," + atype + "," + cost +",false)"
+            run_query(query)
 
 
 def manage_outfits():
