@@ -1,6 +1,7 @@
 import binascii
 import streamlit as st
 import mysql.connector
+from PIL import Image
 
 #Set up db connection
 @st.experimental_singleton
@@ -29,23 +30,39 @@ def create_piece():
         if submit:
             if photo != None:
                 hexvalue = binascii.b2a_base64(photo.getvalue(),newline=False).decode('utf-8')
-                st.write(hexvalue)
                 query = "INSERT INTO articles(Name, Type, Image, Cost, Retired) VALUES ('%s', '%s', '%s', %f, %d)" % (name, atype, hexvalue, cost, 0)
             else:
                 query = "INSERT INTO articles(Name, Type, Cost, Retired) VALUES ('%s', '%s', %f, %d)" % (name, atype, cost, 0)
             cursor.execute(query)
             dbcon.commit()
+            cursor.close()
             st.write("Article added")
+    st.markdown(f'# {list(page_names_to_funcs.keys())[1]}')
 
+def view_pieces():
+    cursor = dbcon.cursor()
+    query = "SELECT Name, Type, Image, Cost From articles where Retired = 0"
+    cursor.execute(query)
 
-def manage_outfits():
-    import streamlit as st
+    table = st.container()
 
+    namecol, typecol, imagecol, statscol, controlcol = table.columns(5)
+ 
+    for (name, atype, imagestr, cost) in cursor:
+        namecol.text(name)
+        typecol.text(atype)
+        binvalue = binascii.a2b_base64(imagestr)
+        image = Image.frombytes(mode="RGB", size=(100,100), data=binvalue)
+        imagecol.image(image) 
+        
+    cursor.close()
     st.markdown(f'# {list(page_names_to_funcs.keys())[2]}')
-
+    
+   
 page_names_to_funcs = {
     "Home": intro,
     "Add Clothing": create_piece,
+    "View Clothing": view_pieces,
 }
 
 page_name = st.sidebar.selectbox("Choose an operation", page_names_to_funcs.keys())
