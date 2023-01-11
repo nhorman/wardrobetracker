@@ -18,7 +18,7 @@ def intro():
     st.sidebar.success("Select an operation above.")
 
 def create_piece():
-    st.write("Create a new Article of Clothing")
+    st.markdown(f'# {list(page_names_to_funcs.keys())[1]}')
     with st.form("NewArticleForm"):
         name = st.text_input("Article Name")
         atype = st.selectbox("Type of Article", ('Top', 'Bottom', 'Dress', 'Shoes', 'Accessory', 'Other'))
@@ -37,9 +37,9 @@ def create_piece():
             dbcon.commit()
             cursor.close()
             st.write("Article added")
-    st.markdown(f'# {list(page_names_to_funcs.keys())[1]}')
 
 def view_pieces():
+    st.markdown(f'# {list(page_names_to_funcs.keys())[2]}')
     cursor = dbcon.cursor()
     query = "SELECT Name, Type, Image, Cost From articles where Retired = 0"
     cursor.execute(query)
@@ -56,7 +56,6 @@ def view_pieces():
         imagecol.image(image) 
         
     cursor.close()
-    st.markdown(f'# {list(page_names_to_funcs.keys())[2]}')
     
    
 page_names_to_funcs = {
