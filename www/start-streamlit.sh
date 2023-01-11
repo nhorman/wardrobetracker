@@ -12,7 +12,7 @@ check_init_db() {
 		if [ $? -eq 0 ]
 		then
 			echo "Waiting on db startup"
-			sleep 1
+			sleep 5 
 			continue
 		fi
 		break
@@ -29,7 +29,7 @@ check_init_db() {
 
 echo "STARTING WARDROBE CONTAINER!!!!"
 
-check_init_db &
+check_init_db
 
 streamlit run --server.port=8501 --server.address=0.0.0.0 /app/index.py
 

@@ -1,10 +1,11 @@
-
+import binascii
 import streamlit as st
 import mysql.connector
 
 #Set up db connection
 @st.experimental_singleton
 def init_connection():
+    print("INITALIZING DB CONNECTION")
     return mysql.connector.connect(**st.secrets["mysql"])
 
 dbcon = init_connection()
@@ -23,12 +24,18 @@ def create_piece():
         cost = st.number_input("Cost Of Article", format="%f")
         photo = st.file_uploader("ArticleImage", accept_multiple_files=False)
         submit = st.form_submit_button("Submit")
+        cursor = dbcon.cursor()
+        query = ""
         if submit:
-            if photo:
-                query = "INSERT INTO articles (Name, Type, Image, Cost, Retired) VALUES (" + name + "," + atype + "," + photo, "," + cost +",false)"
+            if photo != None:
+                hexvalue = binascii.b2a_base64(photo.getvalue(),newline=False).decode('utf-8')
+                st.write(hexvalue)
+                query = "INSERT INTO articles(Name, Type, Image, Cost, Retired) VALUES ('%s', '%s', '%s', %f, %d)" % (name, atype, hexvalue, cost, 0)
             else:
-                query = "INSERT INTO articles (Name, Type, Cost, Retired) VALUES (" + name + "," + atype + "," + cost +",false)"
-            run_query(query)
+                query = "INSERT INTO articles(Name, Type, Cost, Retired) VALUES ('%s', '%s', %f, %d)" % (name, atype, cost, 0)
+            cursor.execute(query)
+            dbcon.commit()
+            st.write("Article added")
 
 
 def manage_outfits():
