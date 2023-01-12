@@ -1,4 +1,6 @@
 import binascii
+import pandas as pd
+import io
 import streamlit as st
 import mysql.connector
 from PIL import Image
@@ -19,7 +21,7 @@ def intro():
 
 def create_piece():
     st.markdown(f'# {list(page_names_to_funcs.keys())[1]}')
-    with st.form("NewArticleForm"):
+    with st.form("NewArticleForm", clear_on_submit=True):
         name = st.text_input("Article Name")
         atype = st.selectbox("Type of Article", ('Top', 'Bottom', 'Dress', 'Shoes', 'Accessory', 'Other'))
         cost = st.number_input("Cost Of Article", format="%f")
@@ -44,19 +46,16 @@ def view_pieces():
     query = "SELECT Name, Type, Image, Cost From articles where Retired = 0"
     cursor.execute(query)
 
-    table = st.container()
-
-    namecol, typecol, imagecol, statscol, controlcol = table.columns(5)
- 
+    page = st.container()
     for (name, atype, imagestr, cost) in cursor:
-        namecol.text(name)
-        typecol.text(atype)
+        row = page.container()
+        namec, typec, imagec = row.columns(3)
+        namec.text(name)
+        typec.text(atype)
         binvalue = binascii.a2b_base64(imagestr)
-        image = Image.frombytes(mode="RGB", size=(100,100), data=binvalue)
-        imagecol.image(image) 
-        
+        imagec.image(Image.open(io.BytesIO(binvalue)))
     cursor.close()
-    
+
    
 page_names_to_funcs = {
     "Home": intro,
