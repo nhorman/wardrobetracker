@@ -53,7 +53,10 @@ def view_pieces():
         namec.text(name)
         typec.text(atype)
         binvalue = binascii.a2b_base64(imagestr)
-        imagec.image(Image.open(io.BytesIO(binvalue)))
+        try:
+            imagec.image(Image.open(io.BytesIO(binvalue)))
+        except e:
+            imagec.image(Image.new(mode="RGBA", size(100,100), color=255)
     cursor.close()
 
    
