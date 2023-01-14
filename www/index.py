@@ -31,7 +31,11 @@ def create_piece():
         query = ""
         if submit:
             if photo != None:
-                hexvalue = binascii.b2a_base64(photo.getvalue(),newline=False).decode('utf-8')
+                tphoto = Image.open(io.BytesIO(photo.getvalue()))
+                tphoto.thumbnail((200,200))
+                toutput = io.BytesIO()
+                tphoto.save(toutput, format='JPEG')
+                hexvalue = binascii.b2a_base64(toutput.getvalue(),newline=False).decode('utf-8')
                 query = "INSERT INTO articles(Name, Type, Image, Cost, TimesWorn, Retired) VALUES ('%s', '%s', '%s', %f, %d, %d)" % (name, atype, hexvalue, cost, 1, 0)
             else:
                 query = "INSERT INTO articles(Name, Type, Cost, TimesWorn, Retired) VALUES ('%s', '%s', %f, %d, %d)" % (name, atype, cost, 1, 0)
