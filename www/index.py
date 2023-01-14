@@ -43,15 +43,23 @@ def create_piece():
 def view_pieces():
     st.markdown(f'# {list(page_names_to_funcs.keys())[2]}')
     cursor = dbcon.cursor()
-    query = "SELECT Name, Type, Image, Cost From articles where Retired = 0"
+    query = "SELECT Name, Type, Image, Cost, TimesWorn From articles where Retired = 0"
     cursor.execute(query)
 
     page = st.container()
-    for (name, atype, imagestr, cost) in cursor:
+    row = page.container()
+    namec, typec, unitcostc, imagec = row.columns(4)
+    namec.text("Article Name")
+    typec.text("Article Type")
+    unitcostc.text("Cost Per Wearing")
+    imagec.text("Picture")
+    for (name, atype, imagestr, cost, timesworn) in cursor:
         row = page.container()
-        namec, typec, imagec = row.columns(3)
+        namec, typec, unitcostc, imagec = row.columns(4)
         namec.text(name)
         typec.text(atype)
+        costperwear = (float(cost)/int(timesworn))
+        unitcostc.text(str(costperwear))
         binvalue = binascii.a2b_base64(imagestr)
         try:
             imagec.image(Image.open(io.BytesIO(binvalue)))
