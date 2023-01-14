@@ -32,9 +32,9 @@ def create_piece():
         if submit:
             if photo != None:
                 hexvalue = binascii.b2a_base64(photo.getvalue(),newline=False).decode('utf-8')
-                query = "INSERT INTO articles(Name, Type, Image, Cost, Retired) VALUES ('%s', '%s', '%s', %f, %d)" % (name, atype, hexvalue, cost, 0)
+                query = "INSERT INTO articles(Name, Type, Image, Cost, TimesWorn, Retired) VALUES ('%s', '%s', '%s', %f, %d, %d)" % (name, atype, hexvalue, cost, 1, 0)
             else:
-                query = "INSERT INTO articles(Name, Type, Cost, Retired) VALUES ('%s', '%s', %f, %d)" % (name, atype, cost, 0)
+                query = "INSERT INTO articles(Name, Type, Cost, TimesWorn, Retired) VALUES ('%s', '%s', %f, %d, %d)" % (name, atype, cost, 1, 0)
             cursor.execute(query)
             dbcon.commit()
             cursor.close()
@@ -56,14 +56,57 @@ def view_pieces():
         try:
             imagec.image(Image.open(io.BytesIO(binvalue)))
         except e:
-            imagec.image(Image.new(mode="RGBA", size(100,100), color=255)
+            imagec.image(Image.new(mode="RGBA", size=(100,100), color=255))
     cursor.close()
 
+def get_dressed():
+    st.markdown(f'# {list(page_names_to_funcs.keys())[3]}')
+    counter=0
+    rowdata = []
+    cursor = dbcon.cursor()
+    query = "SELECT Name, Type, Image, Cost From articles where Retired = 0 ORDER BY Type, Name ASC"
+    cursor.execute(query)
    
+    formcontainer = st.container()
+    wearform = formcontainer.form("Pick Clothes", clear_on_submit=True)
+    tablecont = wearform.container()
+    for (name, atype, imagestr, cost) in cursor:
+        row = tablecont.container()
+        opsc, namec, typec, imagec = row.columns(4)
+        keyname = "wearme"+str(counter)
+        counter=counter+1
+        checkbox = opsc.checkbox("Wear Me", key=keyname)
+        namec.text(name)
+        typec.text(atype)
+        binvalue = binascii.a2b_base64(imagestr)
+        try:
+            imagec.image(Image.open(io.BytesIO(binvalue)))
+        except e:
+            imagec.image(Image.new(mode="RGBA", size=(100,100), color=255))
+        rowdata.append(name)
+    submit = tablecont.form_submit_button("Submit")
+    cursor.close()
+
+    if (submit):
+        cursor = dbcon.cursor()
+        counter=0
+        for name in rowdata:
+            keyname = "wearme"+str(counter)
+            counter=counter+1
+            query="UPDATE articles SET TimesWorn = TimesWorn + 1 WHERE Name = '" + name + "'"
+            if (st.session_state[keyname] == True):
+                cursor.execute(query)
+        dbcon.commit()
+        cursor.close()
+        
+        
+
+
 page_names_to_funcs = {
     "Home": intro,
     "Add Clothing": create_piece,
     "View Clothing": view_pieces,
+    "Get Dressed": get_dressed,
 }
 
 page_name = st.sidebar.selectbox("Choose an operation", page_names_to_funcs.keys())
