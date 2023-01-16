@@ -19,11 +19,13 @@ def intro():
     st.write("Welcome to the wardrobe manager" )
     st.sidebar.success("Select an operation above.")
 
+TypeTuple=('Active Top', 'Regular Long Sleeve Top', 'Regular Short Sleeve Top', 'Tank Top', 'Active Bottom', 'Regular Bottom', 'Active Sports Bra', 'Long Bottoms', 'Short Bottoms', 'Dress/Jumpsuit')
+FilterTuple=('All', 'Active Top', 'Regular Long Sleeve Top', 'Regular Short Sleeve Top', 'Tank Top', 'Active Bottom', 'Regular Bottom', 'Active Sports Bra', 'Long Bottoms', 'Short Bottoms', 'Dress/Jumpsuit')
 def create_piece():
     st.markdown(f'# {list(page_names_to_funcs.keys())[1]}')
     with st.form("NewArticleForm", clear_on_submit=True):
         name = st.text_input("Article Name")
-        atype = st.selectbox("Type of Article", ('Top', 'Bottom', 'Dress', 'Shoes', 'Accessory', 'Other'))
+        atype = st.selectbox("Type of Article", TypeTuple)
         cost = st.number_input("Cost Of Article", format="%f")
         photo = st.file_uploader("ArticleImage", accept_multiple_files=False)
         submit = st.form_submit_button("Submit")
@@ -46,30 +48,40 @@ def create_piece():
 
 def view_pieces():
     st.markdown(f'# {list(page_names_to_funcs.keys())[2]}')
-    cursor = dbcon.cursor()
-    query = "SELECT Name, Type, Image, Cost, TimesWorn From articles where Retired = 0"
-    cursor.execute(query)
+    viewpage = None
+    filterc = st.container()
+    filterform = filterc.form("Filter Articles", clear_on_submit=True)
+    filterselect = filterform.selectbox("Filter by Type", FilterTuple)
+    submit = filterform.form_submit_button("Update Filter")
+    if submit:
+        if (viewpage != None):
+            viewpage.empty()
+        query = "SELECT Name, Type, Image, Cost, TimesWorn From articles where Retired = 0"
+        if filterselect != 'All':
+            query = query + " and Type = '" + str(filterselect) + "'"
 
-    page = st.container()
-    row = page.container()
-    namec, typec, unitcostc, imagec = row.columns(4)
-    namec.text("Article Name")
-    typec.text("Article Type")
-    unitcostc.text("Cost Per Wearing")
-    imagec.text("Picture")
-    for (name, atype, imagestr, cost, timesworn) in cursor:
-        row = page.container()
+        cursor = dbcon.cursor()
+        cursor.execute(query)
+        viewpage = st.container()
+        row = viewpage.container()
         namec, typec, unitcostc, imagec = row.columns(4)
-        namec.text(name)
-        typec.text(atype)
-        costperwear = (float(cost)/int(timesworn))
-        unitcostc.text(str(costperwear))
-        binvalue = binascii.a2b_base64(imagestr)
-        try:
-            imagec.image(Image.open(io.BytesIO(binvalue)))
-        except e:
-            imagec.image(Image.new(mode="RGBA", size=(100,100), color=255))
-    cursor.close()
+        namec.text("Article Name")
+        typec.text("Article Type")
+        unitcostc.text("Cost Per Wearing")
+        imagec.text("Picture")
+        for (name, atype, imagestr, cost, timesworn) in cursor:
+            row = viewpage.container()
+            namec, typec, unitcostc, imagec = row.columns(4)
+            namec.text(name)
+            typec.text(atype)
+            costperwear = (float(cost)/int(timesworn))
+            unitcostc.text(str(costperwear))
+            binvalue = binascii.a2b_base64(imagestr)
+            try:
+                imagec.image(Image.open(io.BytesIO(binvalue)))
+            except e:
+                imagec.image(Image.new(mode="RGBA", size=(100,100), color=255))
+        cursor.close()
 
 def get_dressed():
     st.markdown(f'# {list(page_names_to_funcs.keys())[3]}')
