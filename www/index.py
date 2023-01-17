@@ -1,4 +1,5 @@
 import binascii
+import time
 import pandas as pd
 import io
 import streamlit as st
@@ -53,6 +54,8 @@ def view_pieces():
     filterform = filterc.form("Filter Articles", clear_on_submit=True)
     filterselect = filterform.selectbox("Filter by Type", FilterTuple)
     submit = filterform.form_submit_button("Update Filter")
+
+    viewc = st.container()
     if submit:
         if (viewpage != None):
             viewpage.empty()
@@ -85,46 +88,54 @@ def view_pieces():
 
 def get_dressed():
     st.markdown(f'# {list(page_names_to_funcs.keys())[3]}')
-    counter=0
-    rowdata = []
+
+    filterc = st.container()
+    filterform = filterc.form("Filter Articles", clear_on_submit=True)
+    filterselect = filterform.selectbox("Filter by Type", FilterTuple)
+    submit = filterform.form_submit_button("Update Filter")
+    query = "SELECT Name, Type, Image From articles where Retired = 0"
+    try:
+        st.write("filterkey is " + st.session_state['filterkey'])
+        if st.session_state['filterkey'] != 'All':
+            query = query + " and Type = '" + str(st.session_state['filterkey']) + "'"
+    except:
+        st.session_state['filterkey'] = 'All'
+
     cursor = dbcon.cursor()
-    query = "SELECT Name, Type, Image, Cost From articles where Retired = 0 ORDER BY Type, Name ASC"
     cursor.execute(query)
-   
-    formcontainer = st.container()
-    wearform = formcontainer.form("Pick Clothes", clear_on_submit=True)
-    tablecont = wearform.container()
-    for (name, atype, imagestr, cost) in cursor:
-        row = tablecont.container()
-        opsc, namec, typec, imagec = row.columns(4)
-        keyname = "wearme"+str(counter)
-        counter=counter+1
-        checkbox = opsc.checkbox("Wear Me", key=keyname)
+    viewpage = st.container()
+    viewform = viewpage.form("Select Clothes", clear_on_submit=True)
+    wsubmit = viewform.form_submit_button("Wear Clothes")
+    row = viewform.container()
+    wearc, namec, typec, imagec = row.columns(4)
+    wearc.text("Wear Me")
+    namec.text("Article Name")
+    typec.text("Article Type")
+    imagec.text("Picture")
+    pressed = {}
+    for (name, atype, imagestr) in cursor:
+        row = viewform.container()
+        wearc, namec, typec, imagec = row.columns(4)
+        pressed[name] = wearc.checkbox("Wear Me", key=name)
         namec.text(name)
         typec.text(atype)
         binvalue = binascii.a2b_base64(imagestr)
-        try:
-            imagec.image(Image.open(io.BytesIO(binvalue)))
-        except e:
-            imagec.image(Image.new(mode="RGBA", size=(100,100), color=255))
-        rowdata.append(name)
-    submit = tablecont.form_submit_button("Submit")
+    try:
+        imagec.image(Image.open(io.BytesIO(binvalue)))
+    except:
+        imagec.image(Image.new(mode="RGBA", size=(100,100), color=255))
     cursor.close()
 
-    if (submit):
+    if submit:
+        st.session_state['filterkey'] = filterselect
+        st.experimental_rerun()
+    elif  wsubmit:
         cursor = dbcon.cursor()
-        counter=0
-        for name in rowdata:
-            keyname = "wearme"+str(counter)
-            counter=counter+1
-            query="UPDATE articles SET TimesWorn = TimesWorn + 1 WHERE Name = '" + name + "'"
-            if (st.session_state[keyname] == True):
+        for k in pressed.keys():
+            if pressed[k] == True:
+                query="UPDATE articles SET TimesWorn = TimesWorn + 1 WHERE Name = '" + name + "'"
                 cursor.execute(query)
-        dbcon.commit()
         cursor.close()
-        
-        
-
 
 page_names_to_funcs = {
     "Home": intro,
