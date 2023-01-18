@@ -6,7 +6,7 @@ check_init_db() {
 	echo "CHECKING DB"
 	while true
 	do
-		is_init=$(echo "connect wardrobedb; Select * from inittable;" | mysql -u root --password=secret -h mysql 2>&1)
+		is_init=$(echo "connect wardrobedb; Select * from inittable;" | mysql -u root --password=secret -h wardrobe-mysql 2>&1)
 		echo "$is_init"
 		echo "$is_init" | grep -q "ERROR 2002.*Can't connect to MySQL server"
 		if [ $? -eq 0 ]
@@ -22,8 +22,8 @@ check_init_db() {
 	if [ $? -eq 0 ]
 	then
 		echo "First run, we need to initalize the db"
-		mysql -u root --password=secret -h mysql < /app/createdb.sql
-		echo "connect wardrobedb; create table inittable (INIT BOOL NOT NULL);"  | mysql -u root --password=secret -h mysql
+		mysql -u root --password=secret -h wardrobe-mysql < /app/createdb.sql
+		echo "connect wardrobedb; create table inittable (INIT BOOL NOT NULL);"  | mysql -u root --password=secret -h wardrobe-mysql
 	fi
 }
 

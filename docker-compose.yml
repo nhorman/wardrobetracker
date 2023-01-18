@@ -3,11 +3,11 @@ services:
     build: ./www/
     container_name: wardrobe-streamlit 
     links:
-      - mysql
+      - wardrobe-mysql
     ports:
       - 8501:8501
 
-  mysql:
+  wardrobe-mysql:
     image: mysql:8.0
     container_name: wardrobe-mysql 
     command: --default-authentication-plugin=mysql_native_password
@@ -19,15 +19,15 @@ services:
       MYSQL_USER: myuser
       MYSQL_PASSWORD: password
 
-  phpadmin:
+  wardrobe-phpadmin:
     image: phpmyadmin:latest
     container_name: wardrobe-admin 
     links:
-      - mysql
+      - wardrobe-mysql
     ports:
       - 8581:80
     environment:
       - PMA_ARBITRARY=1
 
 networks:
-  webnet: {}
+  wardrobenet: {}
