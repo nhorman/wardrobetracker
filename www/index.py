@@ -95,7 +95,6 @@ def get_dressed():
     submit = filterform.form_submit_button("Update Filter")
     query = "SELECT Name, Type, Image From articles where Retired = 0"
     try:
-        st.write("filterkey is " + st.session_state['filterkey'])
         if st.session_state['filterkey'] != 'All':
             query = query + " and Type = '" + str(st.session_state['filterkey']) + "'"
     except:
