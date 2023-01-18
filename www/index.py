@@ -5,6 +5,7 @@ import io
 import streamlit as st
 import mysql.connector
 from PIL import Image
+from PIL import ImageOps
 
 #Set up db connection
 @st.experimental_singleton
@@ -36,6 +37,7 @@ def create_piece():
             if photo != None:
                 tphoto = Image.open(io.BytesIO(photo.getvalue()))
                 tphoto.thumbnail((200,200))
+                tphoto = ImageOps.exif_transpose(tphoto)
                 toutput = io.BytesIO()
                 tphoto.save(toutput, format='JPEG')
                 hexvalue = binascii.b2a_base64(toutput.getvalue(),newline=False).decode('utf-8')
