@@ -81,8 +81,8 @@ def view_pieces():
             typec.text(atype)
             costperwear = (float(cost)/int(timesworn))
             unitcostc.text(str(costperwear))
-            binvalue = binascii.a2b_base64(imagestr)
             try:
+                binvalue = binascii.a2b_base64(imagestr)
                 imagec.image(Image.open(io.BytesIO(binvalue)))
             except e:
                 imagec.image(Image.new(mode="RGBA", size=(100,100), color=255))
@@ -95,6 +95,7 @@ def get_dressed():
     filterform = filterc.form("Filter Articles", clear_on_submit=True)
     filterselect = filterform.selectbox("Filter by Type", FilterTuple)
     submit = filterform.form_submit_button("Update Filter")
+
     query = "SELECT Name, Type, Image From articles where Retired = 0"
     try:
         if st.session_state['filterkey'] != 'All':
@@ -102,8 +103,6 @@ def get_dressed():
     except:
         st.session_state['filterkey'] = 'All'
 
-    cursor = dbcon.cursor()
-    cursor.execute(query)
     viewpage = st.container()
     viewform = viewpage.form("Select Clothes", clear_on_submit=True)
     wsubmit = viewform.form_submit_button("Wear Clothes")
@@ -113,6 +112,8 @@ def get_dressed():
     namec.text("Article Name")
     typec.text("Article Type")
     imagec.text("Picture")
+    cursor = dbcon.cursor()
+    cursor.execute(query)
     pressed = {}
     for (name, atype, imagestr) in cursor:
         row = viewform.container()
@@ -120,11 +121,12 @@ def get_dressed():
         pressed[name] = wearc.checkbox("Wear Me", key=name)
         namec.text(name)
         typec.text(atype)
-        binvalue = binascii.a2b_base64(imagestr)
-    try:
-        imagec.image(Image.open(io.BytesIO(binvalue)))
-    except:
-        imagec.image(Image.new(mode="RGBA", size=(100,100), color=255))
+        try:
+            binvalue = binascii.a2b_base64(imagestr)
+            imagec.image(Image.open(io.BytesIO(binvalue)))
+        except:
+            imagec.image(Image.new(mode="RGBA", size=(100,100), color=255))
+
     cursor.close()
 
     if submit:
