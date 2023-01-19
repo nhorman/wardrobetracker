@@ -84,7 +84,7 @@ def view_pieces():
             try:
                 binvalue = binascii.a2b_base64(imagestr)
                 imagec.image(Image.open(io.BytesIO(binvalue)))
-            except e:
+            except:
                 imagec.image(Image.new(mode="RGBA", size=(100,100), color=255))
         cursor.close()
 
